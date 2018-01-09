@@ -75,6 +75,7 @@
     <Compile Include="DB\Shipper.cs" />
     <Compile Include="DB\Supplier.cs" />
     <Compile Include="DB\Territory.cs" />
+    <Compile Include="OrderDataContractSurrogate.cs" />
     <Compile Include="SerializationSolutions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestHelpers\SerializationTester.cs" />

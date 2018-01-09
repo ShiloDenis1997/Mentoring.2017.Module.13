@@ -21,9 +21,12 @@ namespace Task
         [TestMethod]
         public void SerializationCallbacks()
         {
-            dbContext.Configuration.ProxyCreationEnabled = false;
+            dbContext.Configuration.ProxyCreationEnabled = true;
+            dbContext.Configuration.LazyLoadingEnabled = true;
 
-            var tester = new XmlDataContractSerializerTester<IEnumerable<Category>>(new NetDataContractSerializer(), true);
+            var serializer = new NetDataContractSerializer();
+
+            var tester = new XmlDataContractSerializerTester<IEnumerable<Category>>(serializer, true);
             var categories = dbContext.Categories.ToList();
 
             var c = categories.First();
@@ -34,9 +37,11 @@ namespace Task
         [TestMethod]
         public void ISerializable()
         {
-            dbContext.Configuration.ProxyCreationEnabled = false;
+            dbContext.Configuration.ProxyCreationEnabled = true;
+            dbContext.Configuration.LazyLoadingEnabled = true;
 
-            var tester = new XmlDataContractSerializerTester<IEnumerable<Product>>(new NetDataContractSerializer(), true);
+            var serializer = new NetDataContractSerializer();
+            var tester = new XmlDataContractSerializerTester<IEnumerable<Product>>(serializer, true);
             var products = dbContext.Products.ToList();
 
             tester.SerializeAndDeserialize(products);
@@ -46,7 +51,8 @@ namespace Task
         [TestMethod]
         public void ISerializationSurrogate()
         {
-            dbContext.Configuration.ProxyCreationEnabled = false;
+            dbContext.Configuration.ProxyCreationEnabled = true;
+            dbContext.Configuration.LazyLoadingEnabled = true;
 
             var tester = new XmlDataContractSerializerTester<IEnumerable<Order_Detail>>(new NetDataContractSerializer(), true);
             var orderDetails = dbContext.Order_Details.ToList();
@@ -60,7 +66,12 @@ namespace Task
             dbContext.Configuration.ProxyCreationEnabled = true;
             dbContext.Configuration.LazyLoadingEnabled = true;
 
-            var tester = new XmlDataContractSerializerTester<IEnumerable<Order>>(new DataContractSerializer(typeof(IEnumerable<Order>)), true);
+            var serializer = new DataContractSerializer(typeof(IEnumerable<Order>), 
+                new DataContractSerializerSettings
+                {
+                    DataContractSurrogate = new OrderDataContractSurrogate()
+                });
+            var tester = new XmlDataContractSerializerTester<IEnumerable<Order>>(serializer, true);
             var orders = dbContext.Orders.ToList();
 
             tester.SerializeAndDeserialize(orders);
