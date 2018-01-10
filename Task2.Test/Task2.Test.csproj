@@ -58,9 +58,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Task2\Task.csproj">
+    <ProjectReference Include="..\Task2\Task2.csproj">
       <Project>{d6c1a125-1af5-44c4-beb1-e9f49bb81460}</Project>
-      <Name>Task</Name>
+      <Name>Task2</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -1,9 +1,11 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Task.DB;
 using Task.TestHelpers;
 using System.Runtime.Serialization;
 using System.Linq;
 using System.Collections.Generic;
+using System.Data.Entity;
 
 namespace Task
 {
@@ -37,16 +39,14 @@ namespace Task
         [TestMethod]
         public void ISerializable()
         {
-            dbContext.Configuration.ProxyCreationEnabled = true;
-            dbContext.Configuration.LazyLoadingEnabled = true;
+            dbContext.Configuration.ProxyCreationEnabled = false;
 
             var serializer = new NetDataContractSerializer();
             var tester = new XmlDataContractSerializerTester<IEnumerable<Product>>(serializer, true);
-            var products = dbContext.Products.ToList();
+            var products = dbContext.Products.Include(p => p.Category).ToList();
 
             tester.SerializeAndDeserialize(products);
         }
-
 
         [TestMethod]
         public void ISerializationSurrogate()
@@ -54,7 +54,11 @@ namespace Task
             dbContext.Configuration.ProxyCreationEnabled = true;
             dbContext.Configuration.LazyLoadingEnabled = true;
 
-            var tester = new XmlDataContractSerializerTester<IEnumerable<Order_Detail>>(new NetDataContractSerializer(), true);
+            var serializer = new NetDataContractSerializer()
+            {
+                
+            };
+            var tester = new XmlDataContractSerializerTester<IEnumerable<Order_Detail>>(serializer, true);
             var orderDetails = dbContext.Order_Details.ToList();
 
             tester.SerializeAndDeserialize(orderDetails);
@@ -75,6 +79,42 @@ namespace Task
             var orders = dbContext.Orders.ToList();
 
             tester.SerializeAndDeserialize(orders);
+        }
+    }
+
+    public class OrderDetailSurrogateSelector : ISurrogateSelector
+    {
+        private ISurrogateSelector _nextSelector;
+
+        public void ChainSelector(ISurrogateSelector selector)
+        {
+            _nextSelector = selector;
+        }
+
+        public ISerializationSurrogate GetSurrogate(Type type, StreamingContext context, out ISurrogateSelector selector)
+        {
+            
+            throw new NotImplementedException();
+        }
+
+        public ISurrogateSelector GetNextSelector()
+        {
+            return _nextSelector;
+        }
+    }
+
+    public class OrderDetailSerializationSurrogate : ISerializationSurrogate
+    {
+        public void GetObjectData(object obj, SerializationInfo info, StreamingContext context)
+        {
+            var orderDetail = (Order_Detail) obj;
+            //info.AddValue("", orderDetail.);
+            //info.AddValue();
+        }
+
+        public object SetObjectData(object obj, SerializationInfo info, StreamingContext context, ISurrogateSelector selector)
+        {
+            throw new NotImplementedException();
         }
     }
 }

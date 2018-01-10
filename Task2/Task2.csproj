@@ -71,6 +71,7 @@
     <Compile Include="DB\Order.cs" />
     <Compile Include="DB\Order_Detail.cs" />
     <Compile Include="DB\Product.cs" />
+    <Compile Include="DB\ProductCustom.cs" />
     <Compile Include="DB\Region.cs" />
     <Compile Include="DB\Shipper.cs" />
     <Compile Include="DB\Supplier.cs" />
