@@ -36,7 +36,7 @@ namespace Task2.Test
 
             var serializer = new NetDataContractSerializer();
             var tester = new XmlDataContractSerializerTester<IEnumerable<Product>>(serializer, true);
-            var products = dbContext.Products.ToList();
+            var products = dbContext.Products.Include(p => p.Category).Include(p => p.Supplier).ToList();
 
             tester.SerializeAndDeserialize(products);
         }
