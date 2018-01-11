@@ -5,7 +5,7 @@ using Task.TestHelpers;
 using System.Runtime.Serialization;
 using System.Linq;
 using System.Collections.Generic;
-using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 
 namespace Task
 {
@@ -23,15 +23,17 @@ namespace Task
         [TestMethod]
         public void SerializationCallbacks()
         {
-            dbContext.Configuration.ProxyCreationEnabled = true;
-            dbContext.Configuration.LazyLoadingEnabled = true;
+            dbContext.Configuration.ProxyCreationEnabled = false;
 
-            var serializer = new NetDataContractSerializer();
+            var serializationContext = new SerializationContext
+            {
+                ObjectContext = (dbContext as IObjectContextAdapter).ObjectContext,
+                TypeToSerialize = typeof(Category)
+            };
+            var serializer = new NetDataContractSerializer(new StreamingContext(StreamingContextStates.All, serializationContext));
 
             var tester = new XmlDataContractSerializerTester<IEnumerable<Category>>(serializer, true);
             var categories = dbContext.Categories.ToList();
-
-            var c = categories.First();
 
             tester.SerializeAndDeserialize(categories);
         }
@@ -41,9 +43,14 @@ namespace Task
         {
             dbContext.Configuration.ProxyCreationEnabled = false;
 
-            var serializer = new NetDataContractSerializer();
+            var serializationContext = new SerializationContext
+            {
+                ObjectContext = (dbContext as IObjectContextAdapter).ObjectContext,
+                TypeToSerialize = typeof(Product)
+            };
+            var serializer = new NetDataContractSerializer(new StreamingContext(StreamingContextStates.All, serializationContext));
             var tester = new XmlDataContractSerializerTester<IEnumerable<Product>>(serializer, true);
-            var products = dbContext.Products.Include(p => p.Category).Include(p => p.Supplier).ToList();
+            var products = dbContext.Products.ToList();
 
             tester.SerializeAndDeserialize(products);
         }
@@ -51,12 +58,18 @@ namespace Task
         [TestMethod]
         public void ISerializationSurrogate()
         {
-            dbContext.Configuration.ProxyCreationEnabled = true;
-            dbContext.Configuration.LazyLoadingEnabled = true;
+            dbContext.Configuration.ProxyCreationEnabled = false;
+
+            var serializationContext = new SerializationContext
+            {
+                ObjectContext = (dbContext as IObjectContextAdapter).ObjectContext,
+                TypeToSerialize = typeof(Order_Detail)
+            };
 
             var serializer = new NetDataContractSerializer()
             {
-                
+                SurrogateSelector = new OrderDetailSurrogateSelector(),
+                Context = new StreamingContext(StreamingContextStates.All, serializationContext)
             };
             var tester = new XmlDataContractSerializerTester<IEnumerable<Order_Detail>>(serializer, true);
             var orderDetails = dbContext.Order_Details.ToList();
@@ -93,8 +106,12 @@ namespace Task
 
         public ISerializationSurrogate GetSurrogate(Type type, StreamingContext context, out ISurrogateSelector selector)
         {
-            
-            throw new NotImplementedException();
+            selector = this;
+            if (type == typeof(Order_Detail))
+            {
+                return new OrderDetailSerializationSurrogate();
+            }
+            return null;
         }
 
         public ISurrogateSelector GetNextSelector()
@@ -108,13 +125,32 @@ namespace Task
         public void GetObjectData(object obj, SerializationInfo info, StreamingContext context)
         {
             var orderDetail = (Order_Detail) obj;
-            //info.AddValue("", orderDetail.);
-            //info.AddValue();
+            if (context.Context is SerializationContext serializationContext && serializationContext.TypeToSerialize == typeof(Order_Detail))
+            {
+                serializationContext.ObjectContext.LoadProperty(orderDetail, o => o.Order);
+                serializationContext.ObjectContext.LoadProperty(orderDetail, o => o.Product);
+            }
+            info.AddValue(nameof(orderDetail.Discount), orderDetail.Discount);
+            info.AddValue(nameof(orderDetail.OrderID), orderDetail.OrderID);
+            info.AddValue(nameof(orderDetail.ProductID), orderDetail.ProductID);
+            info.AddValue(nameof(orderDetail.Quantity), orderDetail.Quantity);
+            info.AddValue(nameof(orderDetail.UnitPrice), orderDetail.UnitPrice);
+            info.AddValue(nameof(orderDetail.Order), orderDetail.Order);
+            info.AddValue(nameof(orderDetail.Product), orderDetail.Product);
+
         }
 
         public object SetObjectData(object obj, SerializationInfo info, StreamingContext context, ISurrogateSelector selector)
         {
-            throw new NotImplementedException();
+            var orderDetail = (Order_Detail)obj;
+            orderDetail.Discount = info.GetSingle(nameof(orderDetail.Discount));
+            orderDetail.OrderID = info.GetInt32(nameof(orderDetail.OrderID));
+            orderDetail.ProductID = info.GetInt32(nameof(orderDetail.ProductID));
+            orderDetail.Quantity = info.GetInt16(nameof(orderDetail.Quantity));
+            orderDetail.UnitPrice = info.GetDecimal(nameof(orderDetail.UnitPrice));
+            orderDetail.Order = (Order)info.GetValue(nameof(orderDetail.Order), typeof(Order));
+            orderDetail.Product = (Product) info.GetValue(nameof(orderDetail.Product), typeof(Product));
+            return orderDetail;
         }
     }
 }

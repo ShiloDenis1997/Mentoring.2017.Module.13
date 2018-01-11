@@ -11,6 +11,7 @@ using Task;
 using Task.DB;
 using Task.TestHelpers;
 using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 
 namespace Task2.Test
 {
@@ -19,24 +20,16 @@ namespace Task2.Test
         static void Main(string[] args)
         {
             var dbContext = new Northwind();
-            //dbContext.Configuration.ProxyCreationEnabled = true;
-            //dbContext.Configuration.LazyLoadingEnabled = true;
-
-            //var serializer = new DataContractSerializer(typeof(IEnumerable<Order>),
-            //    new DataContractSerializerSettings
-            //    {
-            //        DataContractSurrogate = new OrderDataContractSurrogate()
-            //    });
-            //var tester = new XmlDataContractSerializerTester<IEnumerable<Order>>(serializer, true);
-            //var orders = dbContext.Orders.ToList();
-
-            //tester.SerializeAndDeserialize(orders);
-
             dbContext.Configuration.ProxyCreationEnabled = false;
 
-            var serializer = new NetDataContractSerializer();
+            var serializationContext = new SerializationContext
+            {
+                ObjectContext = (dbContext as IObjectContextAdapter).ObjectContext,
+                TypeToSerialize = typeof(Product)
+            };
+            var serializer = new NetDataContractSerializer(new StreamingContext(StreamingContextStates.All, serializationContext));
             var tester = new XmlDataContractSerializerTester<IEnumerable<Product>>(serializer, true);
-            var products = dbContext.Products.Include(p => p.Category).Include(p => p.Supplier).ToList();
+            var products = dbContext.Products.ToList();
 
             tester.SerializeAndDeserialize(products);
         }

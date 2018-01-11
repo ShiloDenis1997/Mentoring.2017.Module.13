@@ -5,6 +5,7 @@ namespace Task.DB
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Data.Entity.Spatial;
+    using System.Runtime.Serialization;
 
     public partial class Category
     {
@@ -22,7 +23,7 @@ namespace Task.DB
 
         [Column(TypeName = "ntext")]
         public string Description { get; set; }
-
+        
         [Column(TypeName = "image")]
         public byte[] Picture { get; set; }
 
