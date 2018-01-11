@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 namespace Task.DB
@@ -6,7 +7,7 @@ namespace Task.DB
     [Serializable]
     public partial class Product : ISerializable
     {
-        public Product(SerializationInfo info, StreamingContext context)
+        protected Product(SerializationInfo info, StreamingContext context)
         {
             CategoryID = info.GetInt32(nameof(CategoryID));
             Discontinued = info.GetBoolean(nameof(Discontinued));
@@ -18,8 +19,9 @@ namespace Task.DB
             UnitPrice = info.GetDecimal(nameof(UnitPrice));
             UnitsInStock = info.GetInt16(nameof(UnitsInStock));
             UnitsOnOrder = info.GetInt16(nameof(UnitsOnOrder));
-            SetCategoryData(info);
-            SetSupplierData(info);
+            Supplier = (Supplier)info.GetValue(nameof(Supplier), typeof(Supplier));
+            Category = (Category)info.GetValue(nameof(Category), typeof(Category));
+            Order_Details = (ICollection<Order_Detail>) info.GetValue(nameof(Order_Details), typeof(ICollection<Order_Detail>));
         }
 
         public void GetObjectData(SerializationInfo info, StreamingContext context)
@@ -37,69 +39,14 @@ namespace Task.DB
 
             if (context.Context is SerializationContext serializationContext && serializationContext.TypeToSerialize == typeof(Product))
             {
-                //serializationContext.ObjectContext.LoadProperty(this, p => p.Supplier);
+                serializationContext.ObjectContext.LoadProperty(this, p => p.Supplier);
                 serializationContext.ObjectContext.LoadProperty(this, p => p.Category);
+                serializationContext.ObjectContext.LoadProperty(this, p => p.Order_Details);
             }
-            GetCategoryData(info);
-            GetSupplierData(info);
-        }
-
-        private void GetSupplierData(SerializationInfo info)
-        {
-            //if (Supplier == null)
-            //{
-            //    return;
-            //}
 
             info.AddValue(nameof(Supplier), Supplier, typeof(Supplier));
-        }
-
-        private void SetSupplierData(SerializationInfo info)
-        {
-            //bool isHasSupplier = false;
-            //foreach (SerializationEntry entry in info)
-            //{
-            //    if (entry.Name == nameof(Supplier))
-            //    {
-            //        isHasSupplier = true;
-            //        break;
-            //    }
-            //}
-            //if (!isHasSupplier)
-            //{
-            //    return;
-            //}
-
-            Supplier = (Supplier) info.GetValue(nameof(Supplier), typeof(Supplier));
-        }
-
-        private void GetCategoryData(SerializationInfo info)
-        {
-            if (Category == null)
-            {
-                return;
-            }
-
             info.AddValue(nameof(Category), Category, typeof(Category));
-        }
-
-        private void SetCategoryData(SerializationInfo info)
-        {
-            bool isHasCategory = false;
-            foreach (SerializationEntry entry in info)
-            {
-                if (entry.Name == nameof(Category))
-                {
-                    isHasCategory = true;
-                    break;
-                }
-            }
-            if (!isHasCategory)
-            {
-                return;
-            }
-
-            Category = (Category) info.GetValue(nameof(Category), typeof(Category));
+            info.AddValue(nameof(Order_Details), Order_Details, typeof(ICollection<Order_Detail>));
         }
     }
 }

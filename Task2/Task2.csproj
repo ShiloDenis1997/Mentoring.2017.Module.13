@@ -64,7 +64,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="DB\Category.cs" />
-    <Compile Include="DB\CategoryCustom.cs" />
+    <Compile Include="DB\CategoryPartial.cs" />
     <Compile Include="DB\Customer.cs" />
     <Compile Include="DB\CustomerDemographic.cs" />
     <Compile Include="DB\Employee.cs" />
@@ -72,12 +72,14 @@
     <Compile Include="DB\Order.cs" />
     <Compile Include="DB\Order_Detail.cs" />
     <Compile Include="DB\Product.cs" />
-    <Compile Include="DB\ProductCustom.cs" />
+    <Compile Include="DB\ProductPartial.cs" />
     <Compile Include="DB\Region.cs" />
     <Compile Include="DB\Shipper.cs" />
     <Compile Include="DB\Supplier.cs" />
     <Compile Include="DB\Territory.cs" />
-    <Compile Include="OrderDataContractSurrogate.cs" />
+    <Compile Include="Surrogates\OrderDataContractSurrogate.cs" />
+    <Compile Include="Surrogates\OrderDetailSerializationSurrogate.cs" />
+    <Compile Include="Surrogates\OrderDetailSurrogateSelector.cs" />
     <Compile Include="SerializationContext.cs" />
     <Compile Include="SerializationSolutions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -91,6 +93,7 @@
   <ItemGroup>
     <Content Include="instnwnd.sql" />
   </ItemGroup>
+  <ItemGroup />
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>
