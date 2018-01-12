@@ -3,12 +3,12 @@ using System.IO;
 
 namespace Task.TestHelpers
 {
-    public abstract class SerializationTester<TData, TSerializer>
+    public class SerializationTester<TData>
     {
-        protected TSerializer serializer;
-        bool showResult;
+        private readonly ISerializer<TData> serializer;
+        private readonly bool showResult;
 
-        public SerializationTester(TSerializer serializer, bool showResult = false)
+        public SerializationTester(ISerializer<TData> serializer, bool showResult = false)
         {
             this.serializer = serializer;
             this.showResult = showResult;
@@ -19,7 +19,7 @@ namespace Task.TestHelpers
             var stream = new MemoryStream();
 
             Console.WriteLine("Start serialization");
-            Serialization(data, stream);
+            serializer.Serialize(data, stream);
             Console.WriteLine("Serialization finished");
 
             if (showResult)
@@ -30,13 +30,10 @@ namespace Task.TestHelpers
 
             stream.Seek(0, SeekOrigin.Begin);
             Console.WriteLine("Start deserialization");
-            TData result = Deserialization(stream);
+            TData result = serializer.Deserialize(stream);
             Console.WriteLine("Deserialization finished");
 
             return result;
         }
-
-        internal abstract TData Deserialization(MemoryStream stream);
-        internal abstract void Serialization(TData data, MemoryStream stream);
     }
 }

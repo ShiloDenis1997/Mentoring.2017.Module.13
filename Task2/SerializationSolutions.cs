@@ -30,9 +30,10 @@ namespace Task
                 ObjectContext = (dbContext as IObjectContextAdapter).ObjectContext,
                 TypeToSerialize = typeof(Category)
             };
-            var serializer = new NetDataContractSerializer(new StreamingContext(StreamingContextStates.All, serializationContext));
+            var xmlSerializer = new NetDataContractSerializer(new StreamingContext(StreamingContextStates.All, serializationContext));
 
-            var tester = new XmlDataContractSerializerTester<IEnumerable<Category>>(serializer, true);
+            var serializer = new XmlDataContractSerializer<IEnumerable<Category>>(xmlSerializer);
+            var tester = new SerializationTester<IEnumerable<Category>>(serializer, true);
             var categories = dbContext.Categories.ToList();
 
             tester.SerializeAndDeserialize(categories);
@@ -48,8 +49,9 @@ namespace Task
                 ObjectContext = (dbContext as IObjectContextAdapter).ObjectContext,
                 TypeToSerialize = typeof(Product)
             };
-            var serializer = new NetDataContractSerializer(new StreamingContext(StreamingContextStates.All, serializationContext));
-            var tester = new XmlDataContractSerializerTester<IEnumerable<Product>>(serializer, true);
+            var xmlSerializer = new NetDataContractSerializer(new StreamingContext(StreamingContextStates.All, serializationContext));
+            var serializer = new XmlDataContractSerializer<IEnumerable<Product>>(xmlSerializer);
+            var tester = new SerializationTester<IEnumerable<Product>>(serializer, true);
             var products = dbContext.Products.ToList();
 
             tester.SerializeAndDeserialize(products);
@@ -66,12 +68,13 @@ namespace Task
                 TypeToSerialize = typeof(Order_Detail)
             };
 
-            var serializer = new NetDataContractSerializer()
+            var xmlSerializer = new NetDataContractSerializer()
             {
                 SurrogateSelector = new OrderDetailSurrogateSelector(),
                 Context = new StreamingContext(StreamingContextStates.All, serializationContext)
             };
-            var tester = new XmlDataContractSerializerTester<IEnumerable<Order_Detail>>(serializer, true);
+            var serializer = new XmlDataContractSerializer<IEnumerable<Order_Detail>>(xmlSerializer);
+            var tester = new SerializationTester<IEnumerable<Order_Detail>>(serializer, true);
             var orderDetails = dbContext.Order_Details.ToList();
 
             tester.SerializeAndDeserialize(orderDetails);
@@ -83,12 +86,13 @@ namespace Task
             dbContext.Configuration.ProxyCreationEnabled = true;
             dbContext.Configuration.LazyLoadingEnabled = true;
 
-            var serializer = new DataContractSerializer(typeof(IEnumerable<Order>), 
+            var xmlSerializer = new DataContractSerializer(typeof(IEnumerable<Order>), 
                 new DataContractSerializerSettings
                 {
                     DataContractSurrogate = new OrderDataContractSurrogate()
                 });
-            var tester = new XmlDataContractSerializerTester<IEnumerable<Order>>(serializer, true);
+            var serializer = new XmlDataContractSerializer<IEnumerable<Order>>(xmlSerializer);
+            var tester = new SerializationTester<IEnumerable<Order>>(serializer, true);
             var orders = dbContext.Orders.ToList();
 
             tester.SerializeAndDeserialize(orders);
